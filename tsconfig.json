@@ -23,5 +23,7 @@
       "@infra/*": ["./src/infra/*"],
       "@test/*": ["./test/*"]
     }
-  }
+  },
+  "include": ["src", "test"],
+  "exclude": ["node_modules", "dist"]
 }
