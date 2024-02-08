@@ -26,4 +26,20 @@ export class PollsRepository {
       },
     });
   }
+
+  async getPoll(id: string): Promise<PollEntity> {
+    return await this.prismaService.poll.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        options: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+      },
+    });
+  }
 }

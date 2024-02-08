@@ -10,4 +10,8 @@ export class PollsService {
   async create(CreatePollDTO: CreatePollDTO): Promise<PollEntity> {
     return await this.pollsRepository.create(CreatePollDTO);
   }
+
+  async getPoll(id: string): Promise<PollEntity> {
+    return await this.pollsRepository.getPoll(id);
+  }
 }
