@@ -7,13 +7,23 @@ import { PollEntity } from '../entities/poll';
 export class PollsRepository {
   constructor(private prismaService: PrismaService) {}
 
-  async create(CreatePollDTO: CreatePollDTO): Promise<PollEntity> {
-    const poll = {
-      title: CreatePollDTO.title,
-      created_at: new Date(),
-      updated_at: new Date(),
-    };
+  async create(createPollDTO: CreatePollDTO): Promise<PollEntity> {
+    const { title, options } = createPollDTO;
 
-    return await this.prismaService.poll.create({ data: poll });
+    return await this.prismaService.poll.create({
+      data: {
+        title,
+        options: {
+          createMany: {
+            data: options.map((option) => {
+              return { title: option };
+            }),
+          },
+        },
+      },
+      include: {
+        options: true,
+      },
+    });
   }
 }
