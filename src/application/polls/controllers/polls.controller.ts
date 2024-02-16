@@ -1,6 +1,23 @@
-import { Body, Controller, Get, Param, Post, UsePipes } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  Res,
+  UsePipes,
+} from '@nestjs/common';
 import { ZodValidationPipe } from '@shared/pipes/zod-validation.pipe';
+import { randomUUID } from 'crypto';
+import { FastifyReply, FastifyRequest } from 'fastify';
 import { CreatePollDTO, createPollSchema } from '../dto/create-poll.dto';
+import {
+  CreateVoteDTOBody,
+  CreateVoteDTOParam,
+  createVoteSchemaBody,
+  createVoteSchemaParam,
+} from '../dto/create-vote.dto';
 import { PollEntity } from '../entities/poll';
 import { PollsService } from '../services/polls.service';
 
@@ -10,12 +27,52 @@ export class PollsController {
 
   @Post()
   @UsePipes(new ZodValidationPipe(createPollSchema))
-  async create(@Body() CreatePollDTO: CreatePollDTO): Promise<PollEntity> {
-    return await this.pollsService.create(CreatePollDTO);
+  async create(@Body() createPollDTO: CreatePollDTO): Promise<PollEntity> {
+    return await this.pollsService.create(createPollDTO);
   }
 
   @Get(':id')
   async getPoll(@Param('id') id: string): Promise<PollEntity> {
     return await this.pollsService.getPoll(id);
+  }
+
+  @Post(':poll_id/votes')
+  async createVote(
+    @Param() { poll_id }: CreateVoteDTOParam,
+    @Body() { poll_option_id }: CreateVoteDTOBody,
+    @Req() request: FastifyRequest,
+    @Res({ passthrough: true }) response: FastifyReply,
+  ): Promise<any> {
+    const voteOnPollBody = createVoteSchemaBody.parse({
+      poll_option_id: String(poll_option_id),
+    });
+
+    const voteOnPollParams = createVoteSchemaParam.parse({
+      poll_id: String(poll_id),
+    });
+
+    let sessionId = request.cookies.sessionId;
+
+    if (!sessionId) {
+      sessionId = randomUUID();
+
+      response.setCookie('sessionId', sessionId, {
+        path: '/',
+        maxAge: 60 * 60 * 24 * 30,
+        signed: true,
+        httpOnly: true,
+      });
+
+      // console.log(response);
+    }
+
+    console.log('Session ID:', request.cookies['secret']);
+    // return await response.send({ sessionId });
+
+    return { sessionId };
+    // console.log(poll_id, poll_option_id);
+    // console.log(session_id);
+
+    // return await this.pollsService.createVote({ poll_id, poll_option_id });
   }
 }

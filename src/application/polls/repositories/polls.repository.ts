@@ -1,6 +1,7 @@
 import { PrismaService } from '@infra/database/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { CreatePollDTO } from '../dto/create-poll.dto';
+import { CreateVoteDTOBody, CreateVoteDTOParam } from '../dto/create-vote.dto';
 import { PollEntity } from '../entities/poll';
 
 @Injectable()
@@ -41,5 +42,16 @@ export class PollsRepository {
         },
       },
     });
+  }
+
+  async createVote(
+    { poll_id }: CreateVoteDTOParam,
+    { poll_option_id }: CreateVoteDTOBody,
+  ): Promise<void> {
+    // await this.prismaService.vote.create({
+    //   data: {
+    //     poll_option_id,
+    //   },
+    // });
   }
 }
