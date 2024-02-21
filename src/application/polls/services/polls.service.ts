@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 import { CreatePollDTO } from '../dto/create-poll.dto';
 import { CreateVoteDTOBody, CreateVoteDTOParam } from '../dto/create-vote.dto';
 import { PollEntity } from '../entities/poll';
+import { VoteEntity } from '../entities/vote';
 import { PollsRepository } from '../repositories/polls.repository';
 
 @Injectable()
@@ -20,12 +20,20 @@ export class PollsService {
   async createVote(
     { poll_id }: CreateVoteDTOParam,
     { poll_option_id }: CreateVoteDTOBody,
-  ): Promise<any> {
-    const session_id = randomUUID();
-
+    session_id: string,
+  ): Promise<VoteEntity> {
     return await this.pollsRepository.createVote(
       { poll_id },
       { poll_option_id },
+      session_id,
     );
+  }
+
+  async findVote(session_id: string, poll_id: string): Promise<VoteEntity> {
+    return await this.pollsRepository.findVote(session_id, poll_id);
+  }
+
+  async deleteVote(id: number): Promise<void> {
+    await this.pollsRepository.deleteVote(id);
   }
 }

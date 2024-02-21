@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { CreatePollDTO } from '../dto/create-poll.dto';
 import { CreateVoteDTOBody, CreateVoteDTOParam } from '../dto/create-vote.dto';
 import { PollEntity } from '../entities/poll';
+import { VoteEntity } from '../entities/vote';
 
 @Injectable()
 export class PollsRepository {
@@ -47,11 +48,33 @@ export class PollsRepository {
   async createVote(
     { poll_id }: CreateVoteDTOParam,
     { poll_option_id }: CreateVoteDTOBody,
-  ): Promise<void> {
-    // await this.prismaService.vote.create({
-    //   data: {
-    //     poll_option_id,
-    //   },
-    // });
+    session_id: string,
+  ): Promise<VoteEntity> {
+    return await this.prismaService.vote.create({
+      data: {
+        session_id,
+        poll_id,
+        poll_option_id,
+      },
+    });
+  }
+
+  async findVote(session_id: string, poll_id: string): Promise<VoteEntity> {
+    return await this.prismaService.vote.findUnique({
+      where: {
+        session_id_poll_id: {
+          session_id,
+          poll_id,
+        },
+      },
+    });
+  }
+
+  async deleteVote(id: number): Promise<void> {
+    await this.prismaService.vote.delete({
+      where: {
+        id,
+      },
+    });
   }
 }
