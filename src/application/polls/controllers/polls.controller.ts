@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -51,7 +52,23 @@ export class PollsController {
       poll_id: String(poll_id),
     });
 
-    let sessionId = request.cookies.sessionId;
+    let { sessionId } = request.cookies;
+
+    if (sessionId) {
+      const userPreviousVoteOnPoll = await this.pollsService.findVote(
+        sessionId,
+        poll_id,
+      );
+
+      if (
+        userPreviousVoteOnPoll &&
+        userPreviousVoteOnPoll.poll_option_id !== poll_option_id
+      ) {
+        await this.pollsService.deleteVote(userPreviousVoteOnPoll.id);
+      } else if (userPreviousVoteOnPoll) {
+        throw new BadRequestException('You have already voted on this poll.');
+      }
+    }
 
     if (!sessionId) {
       sessionId = randomUUID();
@@ -62,17 +79,14 @@ export class PollsController {
         signed: true,
         httpOnly: true,
       });
-
-      // console.log(response);
     }
 
-    console.log('Session ID:', request.cookies['secret']);
-    // return await response.send({ sessionId });
+    await this.pollsService.createVote(
+      voteOnPollParams,
+      voteOnPollBody,
+      sessionId,
+    );
 
     return { sessionId };
-    // console.log(poll_id, poll_option_id);
-    // console.log(session_id);
-
-    // return await this.pollsService.createVote({ poll_id, poll_option_id });
   }
 }
