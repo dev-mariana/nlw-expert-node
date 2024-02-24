@@ -1,3 +1,4 @@
+import { RedisService } from '@infra/database/redis/redis.service';
 import { Injectable } from '@nestjs/common';
 import { CreatePollDTO } from '../dto/create-poll.dto';
 import { CreateVoteDTOBody, CreateVoteDTOParam } from '../dto/create-vote.dto';
@@ -7,7 +8,10 @@ import { PollsRepository } from '../repositories/polls.repository';
 
 @Injectable()
 export class PollsService {
-  constructor(private readonly pollsRepository: PollsRepository) {}
+  constructor(
+    private readonly pollsRepository: PollsRepository,
+    private readonly redisService: RedisService,
+  ) {}
 
   async create(CreatePollDTO: CreatePollDTO): Promise<PollEntity> {
     return await this.pollsRepository.create(CreatePollDTO);
@@ -35,5 +39,17 @@ export class PollsService {
 
   async deleteVote(id: number): Promise<void> {
     await this.pollsRepository.deleteVote(id);
+  }
+
+  async incrementScore(
+    sortedSetName: string,
+    incrementBy: number,
+    member: string,
+  ): Promise<string> {
+    return await this.redisService.incrementScore(
+      sortedSetName,
+      incrementBy,
+      member,
+    );
   }
 }
