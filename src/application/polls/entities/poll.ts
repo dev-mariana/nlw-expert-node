@@ -5,4 +5,5 @@ export class PollEntity implements Poll {
   title: string;
   created_at: Date;
   updated_at: Date;
+  options: any[];
 }
