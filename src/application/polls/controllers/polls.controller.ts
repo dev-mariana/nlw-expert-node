@@ -65,6 +65,12 @@ export class PollsController {
         userPreviousVoteOnPoll.poll_option_id !== poll_option_id
       ) {
         await this.pollsService.deleteVote(userPreviousVoteOnPoll.id);
+
+        await this.pollsService.incrementScore(
+          poll_id,
+          -1,
+          userPreviousVoteOnPoll.poll_option_id,
+        );
       } else if (userPreviousVoteOnPoll) {
         throw new BadRequestException('You have already voted on this poll.');
       }
@@ -86,6 +92,8 @@ export class PollsController {
       voteOnPollBody,
       sessionId,
     );
+
+    await this.pollsService.incrementScore(poll_id, 1, poll_option_id);
 
     return { sessionId };
   }
